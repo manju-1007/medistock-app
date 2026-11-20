@@ -120,6 +120,31 @@
       try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch (e) {}
     }
 
+    async function pushAccountToCloud(user) {
+      const baseUrl = getCloudUrl();
+      if (!baseUrl || !user || !user.username) return;
+      try {
+        await fetch(`${baseUrl}/medistock/accounts/${encodeURIComponent(user.username)}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(user)
+        });
+      } catch (e) {}
+    }
+
+    async function fetchAccountFromCloud(username) {
+      const baseUrl = getCloudUrl();
+      if (!baseUrl || !username) return null;
+      try {
+        const res = await fetch(`${baseUrl}/medistock/accounts/${encodeURIComponent(username)}.json`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        return (data && data.username) ? data : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
     function getUserStorageKey() {
       const uname = currentUser ? currentUser.username : 'demo';
       return `medistock_inventory_v3_${uname}`;
@@ -854,13 +879,25 @@
     document.getElementById('tabLogin').addEventListener('click', () => switchAuthTab('login'));
     document.getElementById('tabRegister').addEventListener('click', () => switchAuthTab('register'));
 
-    document.getElementById('loginForm').addEventListener('submit', e => {
+    document.getElementById('loginForm').addEventListener('submit', async e => {
       e.preventDefault();
       const uname = document.getElementById('loginUsername').value.trim().toLowerCase();
       const pwd = document.getElementById('loginPassword').value;
       const errBox = document.getElementById('authErrorBox');
       const users = loadUsers();
-      const match = users.find(u => u.username.toLowerCase() === uname && u.password === pwd);
+      let match = users.find(u => u.username.toLowerCase() === uname && u.password === pwd);
+
+      if (!match && getCloudUrl()) {
+        const cloudUser = await fetchAccountFromCloud(uname);
+        if (cloudUser && cloudUser.password === pwd) {
+          match = cloudUser;
+          if (!users.some(u => u.username.toLowerCase() === uname)) {
+            users.push(cloudUser);
+            saveUsers(users);
+          }
+        }
+      }
+
       if (!match) {
         errBox.textContent = 'Invalid username or password. Try demo / 1234 or create a new account.';
         errBox.classList.remove('hidden');
@@ -878,7 +915,7 @@
       showToast('Logged in as Demo Store');
     });
 
-    document.getElementById('registerForm').addEventListener('submit', e => {
+    document.getElementById('registerForm').addEventListener('submit', async e => {
       e.preventDefault();
       const displayName = document.getElementById('regDisplayName').value.trim();
       const username = document.getElementById('regUsername').value.trim().toLowerCase();
@@ -898,9 +935,19 @@
         return;
       }
 
+      if (getCloudUrl()) {
+        const existingCloud = await fetchAccountFromCloud(username);
+        if (existingCloud) {
+          errBox.textContent = 'Username already exists in Cloud. Please login instead.';
+          errBox.classList.remove('hidden');
+          return;
+        }
+      }
+
       const newUser = { username, password, displayName: displayName || username };
       users.push(newUser);
       saveUsers(users);
+      await pushAccountToCloud(newUser);
       errBox.classList.add('hidden');
       enterApp(newUser);
       showToast(`Account created! Welcome, ${newUser.displayName}`);
