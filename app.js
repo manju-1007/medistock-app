@@ -568,7 +568,7 @@
       document.getElementById('fieldName').value = prefillName;
       document.getElementById('fieldGeneric').value = '';
       document.getElementById('fieldStockType').value = 'new';
-      document.getElementById('fieldCategory').value = 'Tablets';
+      document.getElementById('fieldCategory').value = 'Mother tinctures';
       document.getElementById('fieldQty').value = '';
       document.getElementById('fieldMinStock').value = '10';
       document.getElementById('medicineModal').classList.remove('hidden');
@@ -584,7 +584,7 @@
       document.getElementById('fieldName').value = item.name;
       document.getElementById('fieldGeneric').value = item.generic || '';
       document.getElementById('fieldStockType').value = item.stockType || 'present';
-      document.getElementById('fieldCategory').value = item.category || 'Tablets';
+      document.getElementById('fieldCategory').value = item.category || 'Mother tinctures';
       document.getElementById('fieldQty').value = item.quantity;
       document.getElementById('fieldMinStock').value = item.minStock ?? 10;
       document.getElementById('medicineModal').classList.remove('hidden');
@@ -773,7 +773,7 @@
           name,
           generic: entry.generic || '',
           stockType: type,
-          category: entry.category || 'Tablets',
+          category: entry.category || 'Mother tinctures',
           quantity: qty,
           minStock: Math.max(0, parseInt(entry.minStock, 10) || 10),
           updatedAt: new Date().toISOString()
@@ -827,7 +827,7 @@
               name,
               generic: (cols[1] || '').trim(),
               stockType: (cols[2] || '').trim() === 'new' ? 'new' : (cols[2] || '').trim() === 'present' ? 'present' : '',
-              category: (cols[3] || 'Tablets').trim() || 'Tablets',
+              category: (cols[3] || 'Mother tinctures').trim() || 'Mother tinctures',
               quantity: parseInt(cols[4], 10) || 0,
               minStock: parseInt(cols[5], 10) || 10
             });
