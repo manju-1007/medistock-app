@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediStock — Present &amp; New Stock Medicine Manager</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Auth Screen (Login / Create Account) -->
+  <section id="authScreen" class="flex-1 flex items-center justify-center p-4 bg-gradient-to-br from-teal-50 via-slate-50 to-emerald-50">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+      <div class="px-6 pt-6 pb-4 text-center border-b border-slate-100">
+        <div class="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center mx-auto shadow-sm mb-3">
+          <i data-lucide="pill" class="w-6 h-6"></i>
+        </div>
+        <h1 class="text-xl font-bold text-slate-900">MediStock</h1>
+        <p class="text-xs text-slate-500 mt-1">Sign in to manage your Present &amp; New Medicine Stock</p>
+      </div>
+
+      <!-- Auth Tabs -->
+      <div class="grid grid-cols-2 bg-slate-100 p-1 mx-6 mt-5 rounded-xl">
+        <button id="tabLogin" type="button" class="py-2 text-xs font-semibold rounded-lg bg-white text-slate-900 shadow-xs cursor-pointer transition">Login</button>
+        <button id="tabRegister" type="button" class="py-2 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer transition">Create Account</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="p-6 space-y-4">
+        <div id="authErrorBox" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium"></div>
+
+        <div>
+          <label for="loginUsername" class="block text-xs font-semibold text-slate-700 mb-1">Username / Store Name</label>
+          <input id="loginUsername" type="text" required placeholder="e.g., demo or sri_medicals" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+
+        <div>
+          <label for="loginPassword" class="block text-xs font-semibold text-slate-700 mb-1">Password / PIN</label>
+          <input id="loginPassword" type="password" required placeholder="Enter password or PIN" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+
+        <button type="submit" class="w-full py-2.5 text-sm font-semibold text-white bg-teal-600 rounded-xl hover:bg-teal-700 shadow-sm transition cursor-pointer">
+          Login to MediStock
+        </button>
+
+        <div class="relative py-1">
+          <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+          <div class="relative flex justify-center text-xs"><span class="px-2 bg-white text-slate-400">or</span></div>
+        </div>
+
+        <button id="btnDemoLogin" type="button" class="w-full py-2.5 text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-200 rounded-xl hover:bg-teal-100 transition cursor-pointer">
+          Quick Demo Login (demo / 1234)
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" class="hidden p-6 space-y-4">
+        <div id="regErrorBox" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium"></div>
+
+        <div>
+          <label for="regDisplayName" class="block text-xs font-semibold text-slate-700 mb-1">Your Name / Medical Store Name</label>
+          <input id="regDisplayName" type="text" required placeholder="e.g., Sri Sai Medicals" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+
+        <div>
+          <label for="regUsername" class="block text-xs font-semibold text-slate-700 mb-1">Username (for login) <span class="text-rose-500">*</span></label>
+          <input id="regUsername" type="text" required placeholder="e.g., saisri" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+
+        <div>
+          <label for="regPassword" class="block text-xs font-semibold text-slate-700 mb-1">Create Password / PIN <span class="text-rose-500">*</span></label>
+          <input id="regPassword" type="password" required minlength="4" placeholder="Minimum 4 characters" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+
+        <button type="submit" class="w-full py-2.5 text-sm font-semibold text-white bg-teal-600 rounded-xl hover:bg-teal-700 shadow-sm transition cursor-pointer">
+          Create Account &amp; Start
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Main App Screen -->
+  <div id="appScreen" class="hidden min-h-screen flex flex-col">
+    <!-- Top Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <i data-lucide="pill" class="w-5 h-5"></i>
+          </div>
+          <div class="min-w-0">
+            <h1 class="text-lg font-bold text-slate-900 truncate">MediStock</h1>
+            <p class="text-xs text-slate-500 hidden sm:block">Present Stock &amp; New Stock Manager</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <button id="btnOpenCloudSync" type="button" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200" title="Configure Firebase Cloud Sync">
+            <i data-lucide="cloud" class="w-3.5 h-3.5"></i>
+            <span id="cloudStatusLabel">Local Only</span>
+          </button>
+          <span id="userBadge" class="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 text-xs font-medium text-slate-700">
+            <i data-lucide="user" class="w-3.5 h-3.5 text-teal-600"></i>
+            <span id="userDisplayName">User</span>
+          </span>
+          <button id="btnExportPdf" type="button" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-medium text-rose-700 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition cursor-pointer" title="Download stock as PDF">
+            <i data-lucide="file-text" class="w-4 h-4 text-rose-600"></i>
+            <span class="hidden md:inline">Export PDF</span>
+          </button>
+          <button id="btnExportCsv" type="button" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition cursor-pointer" title="Download stock as CSV">
+            <i data-lucide="download" class="w-4 h-4 text-slate-500"></i>
+            <span class="hidden xl:inline">CSV</span>
+          </button>
+          <button id="btnOpenUpload" type="button" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold text-teal-700 bg-teal-50 border border-teal-200 rounded-lg hover:bg-teal-100 transition cursor-pointer" title="Upload stock file or paste medicine list">
+            <i data-lucide="upload" class="w-4 h-4 text-teal-600"></i>
+            <span class="hidden sm:inline">Upload</span>
+          </button>
+          <button id="btnOpenAdd" type="button" class="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 shadow-sm transition cursor-pointer">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add Stock</span>
+          </button>
+          <button id="btnLogout" type="button" class="inline-flex items-center gap-1 px-2.5 py-2 text-xs font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 transition cursor-pointer" title="Logout">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+      <!-- Search & Availability Check Section -->
+      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-semibold text-slate-900">Search Present Stock &amp; New Stock</h2>
+            <p class="text-xs text-slate-500">Check what medicines are already in Present Stock before adding New Stock.</p>
+          </div>
+
+          <div class="inline-flex p-1 bg-slate-100 rounded-xl self-start sm:self-auto" role="group" aria-label="Stock search scope">
+            <button type="button" data-scope="all" class="scope-btn px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-slate-900 shadow-xs transition cursor-pointer">All Stock</button>
+            <button type="button" data-scope="present" class="scope-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition cursor-pointer">Present Stock</button>
+            <button type="button" data-scope="new" class="scope-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition cursor-pointer">New Stock</button>
+          </div>
+        </div>
+
+        <div class="relative">
+          <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Search medicine name in Present Stock or New Stock (e.g., Dolo 650, Azithral, Paracetamol)..."
+            class="w-full pl-11 pr-10 py-3 text-sm sm:text-base bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition"
+          />
+          <button id="btnClearSearch" type="button" class="hidden absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-md cursor-pointer" title="Clear search">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Instant Search Availability Banner -->
+        <div id="availabilityBanner" class="hidden rounded-xl p-3.5 border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-start sm:items-center gap-3">
+            <div id="bannerIconWrap" class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"></div>
+            <div>
+              <p id="bannerTitle" class="text-sm font-semibold"></p>
+              <p id="bannerSubtitle" class="text-xs mt-0.5"></p>
+            </div>
+          </div>
+          <button id="btnBannerAction" type="button" class="hidden px-3.5 py-2 text-xs font-semibold rounded-lg transition shrink-0 cursor-pointer"></button>
+        </div>
+      </section>
+
+      <!-- Summary KPI Cards -->
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <button type="button" data-status-filter="all" class="kpi-card text-left bg-white rounded-xl border border-slate-200 p-4 hover:border-teal-400 transition cursor-pointer shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500">Total Medicines</span>
+            <span class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center">
+              <i data-lucide="package" class="w-4 h-4"></i>
+            </span>
+          </div>
+          <p id="statTotal" class="text-2xl font-bold text-slate-900 mt-2">0</p>
+          <p class="text-xs text-slate-400 mt-0.5">Total units: <span id="statTotalUnits" class="font-medium text-slate-600">0</span></p>
+        </button>
+
+        <button type="button" data-status-filter="in_stock" class="kpi-card text-left bg-white rounded-xl border border-slate-200 p-4 hover:border-emerald-400 transition cursor-pointer shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500">Available / In Stock</span>
+            <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+            </span>
+          </div>
+          <p id="statInStock" class="text-2xl font-bold text-emerald-600 mt-2">0</p>
+          <p class="text-xs text-slate-400 mt-0.5">Present: <span id="statPresentCount" class="font-medium text-slate-600">0</span> • New: <span id="statNewCount" class="font-medium text-teal-600">0</span></p>
+        </button>
+
+        <button type="button" data-status-filter="low_stock" class="kpi-card text-left bg-white rounded-xl border border-slate-200 p-4 hover:border-amber-400 transition cursor-pointer shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500">Low Stock</span>
+            <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+              <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+            </span>
+          </div>
+          <p id="statLowStock" class="text-2xl font-bold text-amber-600 mt-2">0</p>
+          <p class="text-xs text-slate-400 mt-0.5">Needs reorder soon</p>
+        </button>
+
+        <button type="button" data-status-filter="out_of_stock" class="kpi-card text-left bg-white rounded-xl border border-slate-200 p-4 hover:border-rose-400 transition cursor-pointer shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500">Out of Stock</span>
+            <span class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+              <i data-lucide="x-circle" class="w-4 h-4"></i>
+            </span>
+          </div>
+          <p id="statOutOfStock" class="text-2xl font-bold text-rose-600 mt-2">0</p>
+          <p class="text-xs text-slate-400 mt-0.5">0 units left</p>
+        </button>
+      </section>
+
+      <!-- Filters & Inventory List -->
+      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" data-filter-pill="all" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-600 text-white cursor-pointer">All</button>
+            <button type="button" data-filter-pill="in_stock" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">In Stock</button>
+            <button type="button" data-filter-pill="low_stock" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">Low Stock</button>
+            <button type="button" data-filter-pill="out_of_stock" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">Out of Stock</button>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="categoryFilter" class="px-3 py-1.5 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+              <option value="all">All Categories</option>
+              <option value="Tablets">Tablets</option>
+              <option value="Capsules">Capsules</option>
+              <option value="Syrup">Syrup</option>
+              <option value="Injection">Injection</option>
+              <option value="Ointment">Ointment</option>
+              <option value="Drops">Drops</option>
+              <option value="Other">Other</option>
+            </select>
+
+            <select id="sortSelect" class="px-3 py-1.5 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+              <option value="updated_desc">Recently Updated</option>
+              <option value="name_asc">Name (A–Z)</option>
+              <option value="qty_asc">Stock (Low to High)</option>
+              <option value="qty_desc">Stock (High to Low)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <th class="py-3 px-4">Medicine &amp; Salt</th>
+                <th class="py-3 px-4">Stock Type</th>
+                <th class="py-3 px-4">Category</th>
+                <th class="py-3 px-4">Stock Qty</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-slate-100 text-sm"></tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div id="mobileCards" class="md:hidden divide-y divide-slate-100"></div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden py-14 px-4 text-center">
+          <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+            <i data-lucide="inbox" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-sm font-semibold text-slate-900">No medicines found</h3>
+          <p id="emptyStateSub" class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Try clearing your search/filters or add/upload medicines to your stock.</p>
+          <button id="btnEmptyAdd" type="button" class="mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 cursor-pointer">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add Stock</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Footer Utility -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400 pb-4">
+        <p id="lastSavedLabel">All changes are saved locally. Connect Cloud Sync above to sync across devices.</p>
+        <button id="btnResetDemo" type="button" class="text-slate-500 hover:text-slate-700 underline cursor-pointer">Reset to sample stock</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Cloud Sync Modal -->
+  <div id="cloudModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white z-10">
+        <div class="flex items-center gap-2">
+          <i data-lucide="cloud" class="w-5 h-5 text-teal-600"></i>
+          <h3 class="text-base font-bold text-slate-900">Cloud Sync Settings (Firebase)</h3>
+        </div>
+        <button id="btnCloseCloud" type="button" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <div class="p-3.5 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-900 space-y-1.5">
+          <p class="font-semibold">How to connect free Cloud Sync (2 mins):</p>
+          <ol class="list-decimal list-inside space-y-1 text-teal-800">
+            <li>Open <span class="font-semibold">console.firebase.google.com</span> → Create Project.</li>
+            <li>Go to <span class="font-semibold">Build → Realtime Database → Create Database</span> (Start in test mode).</li>
+            <li>Copy your Database URL (starts with <span class="font-mono">https://...firebaseio.com</span>) and paste below.</li>
+          </ol>
+        </div>
+
+        <div id="cloudErrorBox" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium"></div>
+
+        <div>
+          <label for="cloudUrlInput" class="block text-xs font-semibold text-slate-700 mb-1">Firebase Realtime Database URL</label>
+          <input id="cloudUrlInput" type="url" placeholder="https://your-project-default-rtdb.firebaseio.com" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono" />
+          <p class="text-[11px] text-slate-400 mt-1">Tip: If you host this file yourself, you can also paste this URL once into <span class="font-mono">DEFAULT_FIREBASE_URL</span> in the code.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+          <button id="btnCloudPush" type="button" class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-white bg-teal-600 rounded-xl hover:bg-teal-700 cursor-pointer">
+            <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+            <span>Save &amp; Push to Cloud</span>
+          </button>
+          <button id="btnCloudPull" type="button" class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-200 rounded-xl hover:bg-teal-100 cursor-pointer">
+            <i data-lucide="cloud-download" class="w-4 h-4"></i>
+            <span>Pull from Cloud</span>
+          </button>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex items-center justify-between">
+          <button id="btnCloudDisconnect" type="button" class="text-xs font-medium text-rose-600 hover:underline cursor-pointer">Disconnect Cloud Sync</button>
+          <button id="btnCloseCloudFooter" type="button" class="px-4 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Stock Modal -->
+  <div id="uploadModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white z-10">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Upload Medicines / Stock</h3>
+          <p class="text-xs text-slate-500">Upload a CSV/JSON file or paste medicine names anytime.</p>
+        </div>
+        <button id="btnCloseUpload" type="button" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="uploadStockType" class="block text-xs font-semibold text-slate-700 mb-1">Mark Uploaded Items As</label>
+            <select id="uploadStockType" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
+              <option value="new">New Stock</option>
+              <option value="present">Present Stock</option>
+            </select>
+          </div>
+          <div>
+            <label for="uploadMergeMode" class="block text-xs font-semibold text-slate-700 mb-1">If Medicine Already Exists</label>
+            <select id="uploadMergeMode" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
+              <option value="merge">Add Qty to Existing Stock</option>
+              <option value="add">Add as Separate Entry</option>
+              <option value="replace">Replace Entire Stock List</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="dropZone" class="border-2 border-dashed border-slate-300 rounded-xl p-5 text-center bg-slate-50 hover:border-teal-500 hover:bg-teal-50/30 transition">
+          <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center mx-auto mb-2">
+            <i data-lucide="file-up" class="w-5 h-5"></i>
+          </div>
+          <p class="text-sm font-semibold text-slate-800">Upload CSV or JSON file</p>
+          <p class="text-xs text-slate-500 mt-0.5">Drag &amp; drop here, or click below to choose from phone/PC</p>
+          <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
+            <label for="inputImportCsv" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 cursor-pointer">
+              <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
+              <span>Choose File</span>
+              <input id="inputImportCsv" type="file" accept=".csv,.json,.txt" class="hidden" />
+            </label>
+            <button id="btnDownloadSample" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-slate-500"></i>
+              <span>Sample CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-2 pt-2 border-t border-slate-200">
+          <div class="flex items-center justify-between">
+            <label for="bulkPasteInput" class="text-xs font-semibold text-slate-700">Or Quick Paste Medicine List (One per line)</label>
+            <span class="text-[11px] text-slate-400">Name, Qty</span>
+          </div>
+          <textarea
+            id="bulkPasteInput"
+            rows="4"
+            placeholder="Dolo 650mg, 30&#10;Azithral 500mg, 20&#10;Crocin Advance, 25"
+            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono"
+          ></textarea>
+          <div class="flex items-center justify-end gap-2 pt-1">
+            <button id="btnCancelUpload" type="button" class="px-4 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer">Close</button>
+            <button id="btnBulkUpload" type="button" class="px-4 py-2 text-xs font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 cursor-pointer">Upload Pasted List</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add / Edit Medicine Modal -->
+  <div id="medicineModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white z-10">
+        <h3 id="modalTitle" class="text-base font-bold text-slate-900">Add New Medicine / Stock</h3>
+        <button id="btnCloseModal" type="button" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="medicineForm" class="p-5 space-y-4">
+        <input type="hidden" id="fieldId" />
+
+        <div>
+          <label for="fieldName" class="block text-xs font-semibold text-slate-700 mb-1">Medicine Name <span class="text-rose-500">*</span></label>
+          <input id="fieldName" type="text" required placeholder="Type medicine name (checks Present Stock automatically)..." class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
+          <div id="presentStockCheckBox" class="hidden mt-2 p-3 rounded-xl bg-amber-50 border border-amber-200 space-y-2">
+            <div class="flex items-center gap-1.5 text-xs font-semibold text-amber-900">
+              <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0"></i>
+              <span>Already in Present Stock:</span>
+            </div>
+            <div id="presentStockMatches" class="space-y-1.5"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label for="fieldGeneric" class="block text-xs font-semibold text-slate-700 mb-1">Generic / Composition</label>
+            <input id="fieldGeneric" type="text" placeholder="e.g., Paracetamol 650mg" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
+          </div>
+          <div>
+            <label for="fieldStockType" class="block text-xs font-semibold text-slate-700 mb-1">Stock Entry Type</label>
+            <select id="fieldStockType" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white">
+              <option value="new">New Stock (Just Arrived)</option>
+              <option value="present">Present Stock (Existing)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div>
+            <label for="fieldCategory" class="block text-xs font-semibold text-slate-700 mb-1">Category</label>
+            <select id="fieldCategory" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white">
+              <option value="Tablets">Tablets</option>
+              <option value="Capsules">Capsules</option>
+              <option value="Syrup">Syrup</option>
+              <option value="Injection">Injection</option>
+              <option value="Ointment">Ointment</option>
+              <option value="Drops">Drops</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="fieldQty" class="block text-xs font-semibold text-slate-700 mb-1">Stock Quantity <span class="text-rose-500">*</span></label>
+            <input id="fieldQty" type="number" min="0" required placeholder="0" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
+          </div>
+          <div>
+            <label for="fieldMinStock" class="block text-xs font-semibold text-slate-700 mb-1">Low Stock Alert</label>
+            <input id="fieldMinStock" type="number" min="0" value="10" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex items-center justify-end gap-2.5">
+          <button id="btnCancelModal" type="button" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer">Cancel</button>
+          <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 shadow-sm cursor-pointer">Save Medicine</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Quick Restock Modal -->
+  <div id="restockModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm">
+      <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-900">Add New Stock</h3>
+        <button id="btnCloseRestock" type="button" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form id="restockForm" class="p-5 space-y-4">
+        <input type="hidden" id="restockId" />
+        <div>
+          <p id="restockMedName" class="text-sm font-semibold text-slate-900"></p>
+          <p class="text-xs text-slate-500 mt-0.5">Present stock: <span id="restockCurrentQty" class="font-semibold text-slate-700"></span></p>
+        </div>
+        <div>
+          <label for="restockAddQty" class="block text-xs font-semibold text-slate-700 mb-1">New Stock Quantity to Add</label>
+          <input id="restockAddQty" type="number" min="1" required value="10" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" />
+          <div class="flex gap-2 mt-2">
+            <button type="button" data-quick-add="5" class="quick-add-btn px-2.5 py-1 text-xs font-medium bg-slate-100 hover:bg-slate-200 rounded-md cursor-pointer">+5</button>
+            <button type="button" data-quick-add="10" class="quick-add-btn px-2.5 py-1 text-xs font-medium bg-slate-100 hover:bg-slate-200 rounded-md cursor-pointer">+10</button>
+            <button type="button" data-quick-add="25" class="quick-add-btn px-2.5 py-1 text-xs font-medium bg-slate-100 hover:bg-slate-200 rounded-md cursor-pointer">+25</button>
+            <button type="button" data-quick-add="50" class="quick-add-btn px-2.5 py-1 text-xs font-medium bg-slate-100 hover:bg-slate-200 rounded-md cursor-pointer">+50</button>
+          </div>
+        </div>
+        <div class="pt-2 flex items-center justify-end gap-2">
+          <button id="btnCancelRestock" type="button" class="px-3.5 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer">Cancel</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 cursor-pointer">Add Stock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirmModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm p-5 space-y-4">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+          <i data-lucide="alert-circle" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 id="confirmTitle" class="text-sm font-bold text-slate-900">Confirm Action</h3>
+          <p id="confirmMessage" class="text-xs text-slate-600 mt-1"></p>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-1">
+        <button id="btnConfirmCancel" type="button" class="px-3.5 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer">Cancel</button>
+        <button id="btnConfirmOk" type="button" class="px-4 py-2 text-xs font-semibold text-white bg-rose-600 rounded-lg hover:bg-rose-700 cursor-pointer">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+  <script src="app.js"></script>
+</body>
+</html>
